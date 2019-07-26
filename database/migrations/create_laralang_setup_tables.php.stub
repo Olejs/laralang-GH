@@ -1,0 +1,68 @@
+<?php
+
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+class CreateLaraLangSetupTables extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create('languages', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name')->unique();
+            $table->string('display_name')->nullable();
+            $table->timestampsTz();
+        });
+
+        Schema::create('namespaces', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name')->unique();
+            $table->string('display_name')->nullable();
+            $table->timestampsTz();
+        });
+
+        Schema::create('groups', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name')->unique();
+            $table->string('display_name')->nullable();
+            $table->timestampsTz();
+        });
+
+        Schema::create('translations', function (Blueprint $table) {
+            $table->increments('id');
+            $table->integer('language_id')->unsigned();
+            $table->foreign('language_id')->references('id')->on('languages')
+                ->onUpdate('cascade')->onDelete('cascade');
+            $table->integer('namespace_id')->unsigned()->nullable();
+            $table->foreign('namespace_id')->references('id')->on('namespaces')
+                ->onUpdate('cascade')->onDelete('cascade');
+            $table->integer('group_id')->unsigned();
+            $table->foreign('group_id')->references('id')->on('groups')
+                ->onUpdate('cascade')->onDelete('cascade');
+            $table->string('key');
+            // Make the combination of language_id, namespace_id, group_id and key unique
+            $table->index(['language_id', 'namespace_id', 'group_id', 'key']);
+            $table->text('value');
+            $table->timestampsTz();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::drop('translations');
+        Schema::drop('groups');
+        Schema::drop('namespaces');
+        Schema::drop('languages');
+    }
+}
